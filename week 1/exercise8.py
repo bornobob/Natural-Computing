@@ -2,6 +2,7 @@ from deap import gp
 from deap import tools, base, creator, algorithms
 import operator
 import math
+import matplotlib.pyplot as plt
 
 
 POP_SIZE = 1000
@@ -48,6 +49,16 @@ toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("compile", gp.compile, pset=pset)
 
 
+def sort_individuals(x):
+    return sorted(x, key=lambda y: min(y.fitness.values))
+
+
+stats = tools.Statistics(key=lambda ind: ind)  # .fitness.values)
+stats.register("size", lambda x: len(sort_individuals(x)[0]))
+stats.register("min", lambda x: min(sort_individuals(x)[0].fitness.values))
+stats.register("min_individual", lambda x: sort_individuals(x)[0])
+
+
 good_function = {-1.0: 0.0000, -0.9: -0.1629, -0.8: -0.2624, -0.7: -0.3129, -0.6: -0.3264, -0.5: -0.3125, -0.4: -0.2784, -0.3: -0.2289, -0.2: -0.1664, -0.1: -0.0909, 0: 0.0, 0.1: 0.1111, 0.2: 0.2496, 0.3: 0.4251, 0.4: 0.6496, 0.5: 0.9375, 0.6: 1.3056, 0.7: 1.7731, 0.8: 2.3616, 0.9: 3.0951, 1.0: 4.0000}
 
 
@@ -69,6 +80,18 @@ toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 pop = toolbox.population(n=POP_SIZE)
 hof = tools.HallOfFame(1)
 
-algorithms.eaSimple(pop, toolbox, CROSS, MUTAT, GENS, halloffame=hof, verbose=True)
+optimize_pop, logbook = algorithms.eaSimple(pop, toolbox, CROSS, MUTAT, GENS, halloffame=hof, verbose=False, stats=stats)
 
-print(hof[0])
+gens = list(range(GENS))
+fitnesses = [logbook[i]['min'] for i in gens]
+sizes = [logbook[i]['size'] for i in gens]
+
+plt.subplot(1, 2, 1)
+plt.title('Fitness of best individual over generations')
+plt.plot(gens, fitnesses)
+
+plt.subplot(1, 2, 2)
+plt.title('Size of best individual over generations')
+plt.plot(gens, sizes)
+
+plt.show()
