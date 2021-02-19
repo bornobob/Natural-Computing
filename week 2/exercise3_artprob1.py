@@ -4,39 +4,31 @@ import numpy as np
 
 
 ITERS = 100
-CLUSTERS = 3
+CLUSTERS = 2
 POPULATION_SIZE = 25
 C_1 = 1.49
 C_2 = 1.49
 W = 0.72
-FEATURES = 4
-DATAPOINTS = 150
+FEATURES = 2
+DATAPOINTS = 400
 RANDOM_MATRIX = np.random.uniform(low=0.001, high=1.0, size=(2, ITERS, CLUSTERS, FEATURES))
 CLUSTER_BELONGINGS = np.zeros((ITERS, POPULATION_SIZE, DATAPOINTS))
 
 
-def read_dataset(path):
-    data = []
-    known_labels = dict()
-    labels = []
-    with open(path, 'r') as f:
-        for line in f.readlines():
-            line = line.replace('\n', '')
-            if line:
-                data_line = line.split(',')
-                data.append([float(x) for x in data_line[:-1]])
-                label = data_line[-1]
-                label_value = len(known_labels)
-                if label in known_labels:
-                    label_value = known_labels[label]
-                else:
-                    known_labels[label] = label_value
-                labels.append(label_value)
-    return data, labels, known_labels
+def read_dataset():
+    data = np.zeros((DATAPOINTS, FEATURES))
+    labels = np.zeros(DATAPOINTS)
+    for i in range(DATAPOINTS):
+        zs = np.random.uniform(-1, 1, (2,))
+        z1, z2 = zs[0], zs[1]
+        label = int(z1 >= 0.7 or (z1 <= 0.3 and z2 >= -0.2 - z1))
+        data[i] = zs
+        labels[i] = label
+    return data, labels
 
 
 population = None
-data_vectors, labels, label_names = read_dataset('./iris.data')
+data_vectors, labels = read_dataset()
 data_vectors = np.array(data_vectors)
 
 
@@ -66,7 +58,7 @@ def quantization_error(p_i, p, iter):
 
 
 def initialize_particles(hybrid):
-    res = np.random.uniform(low=0, high=5, size=(POPULATION_SIZE, CLUSTERS, FEATURES))
+    res = np.random.uniform(low=0, high=1, size=(POPULATION_SIZE, CLUSTERS, FEATURES))
     if hybrid:
         res[0] = k_means()
     return res
