@@ -41,7 +41,8 @@ data_vectors = np.array(data_vectors)
 
 
 def distance(z, m):
-    return math.sqrt(sum((z[k] - m[k])**2 for k in range(len(z))))
+    # print(z, m)
+    return math.sqrt(sum((z[k] - m)**2 for k in range(len(z))))
 
 
 def velocity(v, x, y, yh, i):
@@ -54,18 +55,47 @@ def velocity(v, x, y, yh, i):
 def quantization_error(p_i, p, iter):
     cluster_belong = CLUSTER_BELONGINGS[iter, p_i]
     data_vectors_per_cluster = [data_vectors[cluster_belong == i] for i in range(CLUSTERS)]
-    return (sum(sum(distance(z, p[c]) for z in data_vectors_per_cluster[c]) / len(data_vectors_per_cluster[c])) for c in range(CLUSTERS)) / CLUSTERS
+
+    #y = list(len(data_vectors_per_cluster[c]) for c in range(CLUSTERS))
+
+    #print(y)
+    # x = (sum(sum(distance(z, p[c]) for z in data_vectors_per_cluster[c]) / len(data_vectors_per_cluster[c])) for c in range(CLUSTERS))
+    # print(x)
+    # return x / CLUSTERS
+
+    # sum(distance(z, p[c]) for z in data_vectors_per_cluster[c] for c in range(CLUSTERS)) 
+
+    # sum( distance(z, p[c]) for z in data_vectors_per_cluster[c] / len(data_vectors_per_cluster[c])) for c in range(CLUSTERS)
+    
+    outer_sum = 0
+    for c in range(CLUSTERS):
+        inner_sum = 0
+        for z in data_vectors_per_cluster[c]:
+            dist = distance(z, p[c])
+            nr_data_vectors_for_C = len(data_vectors_per_cluster[c]) 
+            inner_sum += (dist / nr_data_vectors_for_C)
+        outer_sum += inner_sum
+    return outer_sum / CLUSTERS
+    # x = (sum(sum((distance(z, p[c])/len(data_vectors_per_cluster[c])) for z in data_vectors_per_cluster[c])) / CLUSTERS for c in range(CLUSTERS)) 
 
 
 def initialize_particles():
+    pops = []
     for _ in range(POPULATION_SIZE):
-        pass
+        p = []
+        for k in range(FEATURES):
+            # p.append(np.random.uniform(low=min(), high=max(data_vectors)))
+            p.append(1)
+        pops.append(p)
+    return pops
+
 
 
 def pso_clustering():
     # 1. initialize each particle to contain Nc randomly selected cluster
     #    centroids
     particles = initialize_particles()
+    print(particles)
     velocities = np.zeros((POPULATION_SIZE, CLUSTERS, FEATURES), dtype=np.float)
     local_bests = np.zeros((POPULATION_SIZE, CLUSTERS, FEATURES), dtype=np.float)
     global_best = np.zeros((CLUSTERS, FEATURES), dtype=np.float)
