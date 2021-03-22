@@ -94,14 +94,18 @@ def anomaly_scores(n, r, train_path, data):
 def calculate_auc(results, show_plot=False):
     tprs = []
     fprs = []
-    unique_results = set(x[0] for x in results)
+    unique_results = set([0] + list(x[0] for x in results) + [1])
     for s in sorted(list(unique_results)):
         tp = len(list(filter(lambda x: x[0] < s and x[1] == 0, results)))
         fp = len(list(filter(lambda x: x[0] < s and x[1] == 1, results)))
-        tn = len(list(filter(lambda x: x[0] >= s and x[1] == 1, results)))
-        fn = len(list(filter(lambda x: x[0] >= s and x[1] == 0, results)))
-        tprs.append(tp / (tp + fn))
-        fprs.append(fp / (fp + tn))
+
+        tn = len(list(filter(lambda x: x[0] > s and x[1] == 1, results)))
+        fn = len(list(filter(lambda x: x[0] > s and x[1] == 0, results)))
+
+        tpr = 1 if tp + fn == 0 else tp / (tp + fn)
+        fpr = 1 if fp + tn == 0 else fp / (fp + tn)
+        tprs.append(tpr)
+        fprs.append(fpr)
 
     if show_plot:
         plt.plot(fprs, tprs)
@@ -126,14 +130,14 @@ def preprocess_train_files():
 if __name__ == '__main__':
     preprocess_train_files()
     print('CERT')
-    for r in range(6, 8):
+    for r in range(2, 6):
         for t in range(3):
             tests = preprocess_test(CERT_TESTS[t], CERT_LABELS[t], CERT_CHUNK_SIZE)
             results = anomaly_scores(CERT_CHUNK_SIZE, r, TEMP_CERT_TRAIN, tests)
             auc_result = calculate_auc(results)
             print('testset', t + 1, 'r=', r, 'score =', auc_result)
     print('UNM')
-    for r in range(6, 8):
+    for r in range(2, 6):
         for t in range(3):
             tests = preprocess_test(UNM_TESTS[t], UNM_LABELS[t], UNM_CHUNK_SIZE)
             results = anomaly_scores(UNM_CHUNK_SIZE, r, TEMP_UNM_TRAIN, tests)

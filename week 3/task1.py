@@ -43,7 +43,7 @@ def anomaly_scores(n, r, anomalous_lang):
                                   t.stdout.split('\n'))))
 
     results = [(x, 0) for x in results_eng] + [(x, 1) for x in results_tag]
-    unique_scores = set(x[0] for x in results)
+    unique_scores = set([0] + list(x[0] for x in results) + [1])
     return results, unique_scores
 
 
@@ -55,11 +55,11 @@ def calculate_auc(results, unique_scores, show_plot=False):
         tp = len(list(filter(lambda x: x[0] < s and x[1] == 0, results)))
         fp = len(list(filter(lambda x: x[0] < s and x[1] == 1, results)))
 
-        tn = len(list(filter(lambda x: x[0] >= s and x[1] == 1, results)))
-        fn = len(list(filter(lambda x: x[0] >= s and x[1] == 0, results)))
+        tn = len(list(filter(lambda x: x[0] > s and x[1] == 1, results)))
+        fn = len(list(filter(lambda x: x[0] > s and x[1] == 0, results)))
 
-        tpr = tp / (tp + fn)
-        fpr = fp / (fp + tn)
+        tpr = 1 if tp + fn == 0 else tp / (tp + fn)
+        fpr = 1 if fp + tn == 0 else fp / (fp + tn)
         tprs.append(tpr)
         fprs.append(fpr)
 
