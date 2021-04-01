@@ -24,18 +24,21 @@ td {
 	CONFIGURATION SETTINGS
 	----------------------------------
 */
+
+let obstacleGridSize = 8;
+
 let config = {
 
 	// Grid settings
 	ndim : 2,
-	field_size : [210,210],
+	field_size : [350, 350],
 	
 	// CPM parameters and configuration
 	conf : {
 		// Basic CPM parameters
 		torus : [true,true],						// Should the grid have linked borders?
 		seed : 1,							// Seed for random number generation.
-		T : 15,								// CPM temperature
+		T : 0,								// CPM temperature
 
 		// Constraint parameters. 
 		// Mostly these have the format of an array in which each element specifies the
@@ -43,15 +46,18 @@ let config = {
 		// First value is always cellkind 0 (the background) and is often not used.
 		
 		// Adhesion parameters:
-		J : [ [NaN, 6,   6], 
-              [6,   13, NaN], 
-              [6,   NaN, 13] ],
-		
+		J : [ [NaN, 12, 6], 
+              [12, 6, 16], 
+              [6, 16, 6] ],
+		newJ : [ [NaN, NaN, 6], 
+              [NaN, 6, NaN], 
+              [6, NaN, 6] ],
+        
 		// VolumeConstraint parameters
 		// VolumeConstraint importance per cellkind
 		// Target volume of each cellkind
 		LAMBDA_V : [0,2,2],
-		V : [0,25,25]		
+		V : [0,25,50]		
 
 		
 	},
@@ -105,9 +111,11 @@ function initialize(){
 	step()
     
     setTimeout(() => {
-        sim.C.conf.J[1][0] = NaN;
-        sim.C.conf.J[0][1] = NaN;
-    }, 50);
+        sim.C.conf.T = 20;
+        console.log('reset T');
+        sim.C.conf.J = sim.C.conf.newJ;
+        sim.gm.seedCellsInCircle( 2, 200, sim.C.midpoint, sim.C.extents[0]/3 );
+    }, 1000);
 }
 
 
@@ -128,18 +136,26 @@ function initializeGrid(){
 	// add the GridManipulator if not already there and if you need it
 	if( !this.helpClasses["gm"] ){ this.addGridManipulator() }
 	
-	this.gm.seedCellsInCircle( 1, 500, this.C.midpoint, this.C.extents[0]/3 )
-	this.gm.seedCellsInCircle( 2, 500, this.C.midpoint, this.C.extents[0]/3 )
-
+    // assume square grid
+    let width = this.C.extents[0];
+    let distanceBetweenObstacles = Math.floor(width / (obstacleGridSize + 1));
+    
+    // seed obstacle cells
+    for (let i = 0; i < obstacleGridSize; i++) {
+        for (let j = 0; j < obstacleGridSize; j++) {
+            let coord = [(i + 1) * distanceBetweenObstacles, (j + 1) * distanceBetweenObstacles];
+            this.gm.seedCellAt(1, coord);
+        }
+    }
 }
 
 </script>
 </head>
 <body onload="initialize()">
-<h1>Cellsorting</h1>
+<h1>Cellsorting with cells as obstacles</h1>
 <p>
  
- Cells sorting themselves through differential adhesion.
+ The red cells all want to merge together but they are being slowed down by other cells that function as obstacles.
 </p>
 </body>
 </html>
