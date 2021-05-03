@@ -25,7 +25,7 @@ td {
 	----------------------------------
 */
 
-let obstacleGridSize = 8;
+let obstacleGridSize = 12;
 
 let config = {
 
@@ -46,16 +46,21 @@ let config = {
 		// First value is always cellkind 0 (the background) and is often not used.
 		
 		// Adhesion parameters:
-		J : [ [NaN, 6], 
-              [6,   6] ],
+		J : [ [0, 20], 
+              [20, 0] ],
         
 		// VolumeConstraint parameters
 		// VolumeConstraint importance per cellkind
 		// Target volume of each cellkind
 		LAMBDA_V : [0,2],
-		V : [0,50]		
+		V : [0,200],
 
-		
+		LAMBDA_P : [0,2],				// PerimeterConstraint importance per cellkind
+		P : [0,180],
+
+		LAMBDA_ACT : [0,200],			// ActivityConstraint importance per cellkind
+		MAX_ACT : [0,80],				// Activity memory duration per cellkind
+		ACT_MEAN : "geometric"
 	},
 	
 	// Simulation setup and configuration
@@ -72,9 +77,9 @@ let config = {
 		
 		// Visualization
 		CANVASCOLOR : "eaecef",
-		CELLCOLOR : ["FF0000"],
+		CELLCOLOR : ["000000"],
 		ACTCOLOR : [true,false],			// Should pixel activity values be displayed?
-		SHOWBORDERS : [true,true],				// Should cellborders be displayed?
+		SHOWBORDERS : [true,false],				// Should cellborders be displayed?
 		zoom : 2,							// zoom in on canvas with this factor.
 		
 		// Output images
@@ -134,7 +139,7 @@ function initializeGrid(){
     for (let i = 0; i < obstacleGridSize; i++) {
         for (let j = 0; j < obstacleGridSize; j++) {
             let coord = [(i + 1) * distanceBetweenObstacles, (j + 1) * distanceBetweenObstacles];
-            this.channelvoxels = this.gm.makeCircle(coord, 3, this.channelvoxels );
+            this.channelvoxels = this.gm.makeCircle(coord, 6, this.channelvoxels );
         }
     }
     
@@ -142,7 +147,7 @@ function initializeGrid(){
 		BARRIER_VOXELS : this.channelvoxels
 	}));
     
-    this.gm.seedCellsInCircle( 1, 200, this.C.midpoint, this.C.extents[0]/3 );
+    this.gm.seedCellsInCircle( 1, 80, this.C.midpoint, this.C.extents[0]/3 );
 }
 
 function drawBelow(){

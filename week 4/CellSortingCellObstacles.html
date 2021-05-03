@@ -25,7 +25,7 @@ td {
 	----------------------------------
 */
 
-let obstacleGridSize = 8;
+let obstacleGridSize = 6;
 
 let config = {
 
@@ -36,7 +36,7 @@ let config = {
 	// CPM parameters and configuration
 	conf : {
 		// Basic CPM parameters
-		torus : [true,true],						// Should the grid have linked borders?
+		torus : [true,true],				// Should the grid have linked borders?
 		seed : 1,							// Seed for random number generation.
 		T : 0,								// CPM temperature
 
@@ -46,20 +46,22 @@ let config = {
 		// First value is always cellkind 0 (the background) and is often not used.
 		
 		// Adhesion parameters:
-		J : [ [NaN, 12, 6], 
-              [12, 6, 16], 
-              [6, 16, 6] ],
-		newJ : [ [NaN, NaN, 6], 
-              [NaN, 6, NaN], 
-              [6, NaN, 6] ],
+		J : [ [NaN, 20, 20 ], 
+              [20,  20, 20 ], 
+              [20,  20, 20 ] ],
+		newJ : [ [NaN, NaN, 20  ], 
+                 [NaN, 20,  NaN ], 
+                 [20,  NaN, 20  ] ],
         
-		// VolumeConstraint parameters
-		// VolumeConstraint importance per cellkind
-		// Target volume of each cellkind
 		LAMBDA_V : [0,2,2],
-		V : [0,25,50]		
+		V : [0,100,200],
 
-		
+		LAMBDA_P : [0,2, 2],
+		P : [0, 90, 180],
+
+		LAMBDA_ACT : [0, 0, 200],
+		MAX_ACT : [0, 80, 80],
+		ACT_MEAN : "geometric"
 	},
 	
 	// Simulation setup and configuration
@@ -76,22 +78,10 @@ let config = {
 		
 		// Visualization
 		CANVASCOLOR : "eaecef",
-		CELLCOLOR : ["000000","FF0000"],
-		ACTCOLOR : [true,false],			// Should pixel activity values be displayed?
-		SHOWBORDERS : [true,true],				// Should cellborders be displayed?
-		zoom : 2,							// zoom in on canvas with this factor.
-		
-		// Output images
-		SAVEIMG : true,					// Should a png image of the grid be saved
-		// during the simulation?
-		IMGFRAMERATE : 1,					// If so, do this every <IMGFRAMERATE> MCS.
-		SAVEPATH : "output/img/CellSorting",				// ... And save the image in this folder.
-		EXPNAME : "CellSorting",					// Used for the filename of output images.
-		
-		// Output stats etc
-		STATSOUT : { browser: false, node: true }, // Should stats be computed?
-		LOGRATE : 10							// Output stats every <LOGRATE> MCS.
-
+		CELLCOLOR : ["ACACAC","000000"],
+		ACTCOLOR : [true,true, true],			// Should pixel activity values be displayed?
+		SHOWBORDERS : [false,false, false],
+		zoom : 2
 	}
 }
 /*	---------------------------------- */
@@ -114,7 +104,7 @@ function initialize(){
         sim.C.conf.T = 20;
         console.log('reset T');
         sim.C.conf.J = sim.C.conf.newJ;
-        sim.gm.seedCellsInCircle( 2, 200, sim.C.midpoint, sim.C.extents[0]/3 );
+        sim.gm.seedCellsInCircle( 2, 80, sim.C.midpoint, sim.C.extents[0]/3 );
     }, 1000);
 }
 
